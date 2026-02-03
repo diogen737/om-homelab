@@ -67,6 +67,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
+    environment:
+      UPLOAD_LOCATION: ${IMMICH_UPLOAD_LOCATION}
+      DB_DATA_LOCATION: ${IMMICH_DB_DATA_LOCATION}
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD}
+      DB_USERNAME: ${IMMICH_DB_USERNAME}
+      DB_DATABASE_NAME: ${IMMICH_DB_DATABASE_NAME}
     ports:
       - 127.0.0.1:2283:2283
     depends_on:
