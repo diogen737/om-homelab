@@ -27,7 +27,7 @@ services:
     container_name: jellyfin
     user: 1000:1000
     group_add:
-      - render
+      - 992
     ports:
       - 127.0.0.1:8096:8096/tcp
       - 127.0.0.1:8920:8920/tcp
@@ -68,15 +68,13 @@ services:
     env_file:
       - .env
     ports:
-      - '127.0.0.1:2283:2283'
+      - 127.0.0.1:2283:2283
     depends_on:
       - redis
       - database
     networks:
       - homelab-network
     restart: always
-    # healthcheck:
-    #   disable: false
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -93,8 +91,6 @@ services:
     networks:
       - homelab-network
     restart: always
-    # healthcheck:
-    #   disable: false
 
   redis:
     container_name: immich_redis
@@ -122,8 +118,6 @@ services:
     networks:
       - homelab-network
     restart: always
-    # healthcheck:
-    #   disable: false
 
 # ================================================
 

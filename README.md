@@ -1,4 +1,4 @@
-<h1 style="text-align: center">om-homelab</h1>
+<h1 align="center">om-homelab</h1>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
