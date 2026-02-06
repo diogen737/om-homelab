@@ -6,7 +6,7 @@ services:
     image: jc21/nginx-proxy-manager:latest
     container_name: nginx-proxy-manager
     environment:
-      TZ: Europe/Berlin
+      TZ: ${TZ}
     ports:
       - 80:80
       - 81:81
