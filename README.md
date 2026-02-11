@@ -37,6 +37,20 @@ Docker Compose and configuration for my personal homelab: reverse proxy, media s
 
 ---
 
+## Backup
+
+```sh
+sudo cp backup/restic-backup.sh /usr/local/sbin/
+sudo cp backup backup.service backup.timer /etc/systemd/system/
+sudo mkdir -p /var/cache/restic
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now backup.timer
+systemctl list-timers | grep backup
+```
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

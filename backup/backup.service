@@ -1,0 +1,6 @@
+[Unit]
+Description=Nightly Backup Job
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/restic-backup.sh
