@@ -40,8 +40,10 @@ Docker Compose and configuration for my personal homelab: reverse proxy, media s
 ## Backup
 
 ```sh
-sudo cp backup/restic-backup.sh /usr/local/sbin/
-sudo cp backup backup.service backup.timer /etc/systemd/system/
+sudo cp ./backup/restic-backup.sh /usr/local/sbin/
+sudo chmod 700 /usr/local/sbin/restic-backup.sh
+
+sudo cp ./backup/backup.service ./backup/backup.timer /etc/systemd/system/
 sudo mkdir -p /var/cache/restic
 
 sudo systemctl daemon-reload

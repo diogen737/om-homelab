@@ -60,6 +60,7 @@ backup() {
 			/srv/samba \
 			--exclude /srv/immich/library/encoded-video \
 			--exclude /srv/immich/library/thumbs \
+			--no-scan
 			--json
 	)
 
