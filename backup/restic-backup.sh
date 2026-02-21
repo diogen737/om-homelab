@@ -60,7 +60,7 @@ backup() {
 			/srv/samba \
 			--exclude /srv/immich/library/encoded-video \
 			--exclude /srv/immich/library/thumbs \
-			--no-scan
+			--no-scan \
 			--json
 	)
 
@@ -89,9 +89,18 @@ main() {
 	END_TIME=$(date +%s)
 	DURATION=$((END_TIME - START_TIME))
 
+	# Get remaining space on backup device (for local repositories)
+	if [[ "$RESTIC_REPOSITORY" == /* ]]; then
+		AVAILABLE_BYTES=$(df -B1 "$RESTIC_REPOSITORY" 2>/dev/null | tail -1 | awk '{print $4}')
+		AVAILABLE_HUMAN=$(numfmt --to=iec "$AVAILABLE_BYTES" 2>/dev/null || echo "N/A")
+	else
+		AVAILABLE_HUMAN="N/A (remote repo)"
+	fi
+
 	send_telegram "✅ Backup SUCCESS on ${HOSTNAME}
 💾 Added: ${ADDED_HUMAN}
 📦 Repo size: ${TOTAL_HUMAN}
+💿 Free space: ${AVAILABLE_HUMAN}
 ⏱️ Duration: ${DURATION}s"
 	exit 0
 }
