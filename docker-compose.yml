@@ -3,7 +3,7 @@ services:
   # Nginx Proxy Manager
   # ================================================
   nginx-proxy-manager:
-    image: jc21/nginx-proxy-manager:latest
+    image: jc21/nginx-proxy-manager:2.14.0@sha256:2aa69b382a384b676c0d4f1d6f2eac40ecd478fcf7af1cfb3f9f1d3cd0c81e12
     container_name: nginx-proxy-manager
     environment:
       TZ: ${TZ}
@@ -23,7 +23,7 @@ services:
   # ================================================
 
   jellyfin:
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:10.11.6@sha256:333b647716631443a43c7fabac4b0c46b4e2f036bad19547e00958f10f721b85
     container_name: jellyfin
     user: 1000:1000
     group_add:
