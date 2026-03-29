@@ -56,7 +56,6 @@ backup() {
 			/srv/jellyfin/config \
 			/srv/immich \
 			/srv/nginx-proxy-manager \
-			/var/lib/docker/volumes/om-homelab_grafana-data \
 			/srv/samba \
 			--exclude /srv/immich/library/encoded-video \
 			--exclude /srv/immich/library/thumbs \
