@@ -1,7 +1,25 @@
 services:
   # ================================================
-  # Nginx Proxy Manager
+  # Network
   # ================================================
+
+  netbird-client:
+    image: netbirdio/netbird:0.67.4
+    container_name: netbird-client
+    hostname: "om-routing-peer"
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+    devices:
+      # Required when using userspace mode or when kernel module is not available
+      - /dev/net/tun
+    network_mode: host
+    environment:
+      - NB_SETUP_KEY=B9138AA3-C170-4D75-82D8-8661FA0C06C2
+    volumes:
+      - netbird-client:/var/lib/netbird
+
   nginx-proxy-manager:
     image: jc21/nginx-proxy-manager:2.14.0@sha256:2aa69b382a384b676c0d4f1d6f2eac40ecd478fcf7af1cfb3f9f1d3cd0c81e12
     container_name: nginx-proxy-manager
@@ -114,7 +132,7 @@ services:
       POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
       POSTGRES_USER: ${IMMICH_DB_USERNAME}
       POSTGRES_DB: ${IMMICH_DB_DATABASE_NAME}
-      POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_INITDB_ARGS: "--data-checksums"
       # Uncomment the DB_STORAGE_TYPE: 'HDD' var if your database isn't stored on SSDs
       # DB_STORAGE_TYPE: 'HDD'
     volumes:
@@ -133,6 +151,7 @@ services:
 
 volumes:
   model-cache:
+  netbird-client:
 
 networks:
   homelab-network:
