@@ -6,7 +6,7 @@ services:
   netbird-client:
     image: netbirdio/netbird:0.67.4
     container_name: netbird-client
-    hostname: "om-routing-peer"
+    hostname: om-routing-peer
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
@@ -147,11 +147,44 @@ services:
   # Monitoring
   # ================================================
 
+  beszel:
+    image: henrygd/beszel
+    container_name: beszel
+    restart: unless-stopped
+    ports:
+      - 8090:8090
+    networks:
+      - homelab-network
+    volumes:
+      - beszel-data:/beszel_data
+      - beszel-socket:/beszel_socket
+    environment:
+      - APP_URL=https://beszel.om-homelab.duckdns.org
+
+  beszel-agent:
+    image: henrygd/beszel-agent
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - beszel-agent-data:/var/lib/beszel-agent
+      # monitor other disks / partitions by mounting a folder in /extra-filesystems
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      KEY: ${BESZEL_AGENT_KEY}
+      TOKEN: ${BESZEL_AGENT_TOKEN}
+      HUB_URL: https://beszel.om-homelab.duckdns.org
+
 # ================================================
 
 volumes:
   model-cache:
   netbird-client:
+  beszel-data:
+  beszel-socket:
+  beszel-agent-data:
 
 networks:
   homelab-network:
