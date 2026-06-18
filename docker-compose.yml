@@ -177,6 +177,9 @@ services:
     cap_add:
       - SYS_RAWIO # required for S.M.A.R.T. data
       - SYS_ADMIN # required for NVMe S.M.A.R.T. data
+    healthcheck:
+      test: ['CMD', '/agent', 'health']
+      interval: 120s
     environment:
       LISTEN: /beszel_socket/beszel.sock
       KEY: ${BESZEL_AGENT_KEY}
