@@ -38,10 +38,9 @@ services:
 
   # ================================================
   # Immich
-  # ================================================
-
   # https://docs.immich.app/install/docker-compose
   # https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+  # ================================================
 
   immich-server:
     container_name: immich_server
@@ -120,6 +119,7 @@ services:
 
   # ================================================
   # Nextcloud
+  # https://netbird.io/knowledge-hub/nextcloud-docker-setup
   # ================================================
 
   nextcloud-aio-mastercontainer:
@@ -130,17 +130,16 @@ services:
     volumes:
       - nextcloud_aio_mastercontainer:/mnt/docker-aio-config # This line is not allowed to be changed as otherwise the built-in backup solution will not work
       - /var/run/docker.sock:/var/run/docker.sock:ro # May be changed on macOS, Windows or docker rootless. See the applicable documentation. If adjusting, don't forget to also set 'WATCHTOWER_DOCKER_SOCKET_PATH'!
-    devices: ["/dev/dri"] # Uncomment to enable hardware acceleration. ⚠️⚠️⚠️ Warning: this only works if the '/dev/dri' device is present on the host! If it should not exist on your host, don't add this as otherwise the mastercontainer will fail to start! See https://github.com/nextcloud/all-in-one#how-to-enable-hardware-acceleration-for-nextcloud
+    devices:
+      - /dev/dri
     environment:
-      APACHE_PORT: 11001
-      NC_TRUSTED_PROXIES: 100.64.0.0/10
+      APACHE_PORT: 11001 # Needed when running behind a web server or reverse proxy (like Apache, Nginx, Caddy, Cloudflare Tunnel and else). See https://github.com/nextcloud/all-in-one/blob/main/reverse-proxy.md
+      NC_TRUSTED_PROXIES: 100.64.0.0/10 # Since traffic hits Nextcloud through the NetBird reverse proxy, you need to tell AIO to trust that network so it correctly identifies client IPs instead of seeing everything as coming from the proxy.
       FULLTEXTSEARCH_JAVA_OPTIONS: "-Xms1024M -Xmx1024M"
-      NEXTCLOUD_DATADIR: /srv/nextcloud
+      NEXTCLOUD_DATADIR: /srv/nextcloud # Allows to set the host directory for Nextcloud's datadir. ⚠️⚠️⚠️ Warning: do not set or adjust this value after the initial Nextcloud installation is done! See https://github.com/nextcloud/all-in-one#how-to-change-the-default-location-of-nextclouds-datadir
       NEXTCLOUD_UPLOAD_LIMIT: 1028G
       NEXTCLOUD_MAX_TIME: 7200
       NEXTCLOUD_MEMORY_LIMIT: 1028M
-      SKIP_DOMAIN_VALIDATION: false
-      TALK_PORT: 3478
     networks: 
       - homelab-network
     ports:
