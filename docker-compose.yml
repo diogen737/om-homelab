@@ -37,41 +37,11 @@ services:
     restart: unless-stopped
 
   # ================================================
-  # Jellyfin
+  # Immich
   # ================================================
 
-  jellyfin:
-    image: jellyfin/jellyfin:10.11.11@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
-    container_name: jellyfin
-    user: 1000:1000
-    group_add:
-      - 992
-    ports:
-      - 127.0.0.1:8096:8096/tcp
-      - 127.0.0.1:8920:8920/tcp
-      - 127.0.0.1:7359:7359/udp
-    volumes:
-      - /srv/jellyfin/config:/config
-      - /srv/jellyfin/cache:/cache
-      - /mnt/jellyfin-media:/media:ro
-    devices:
-      - /dev/dri/renderD128:/dev/dri/renderD128
-    networks:
-      - homelab-network
-    restart: unless-stopped
-
-  # ================================================
-  # Immich configuration
-  # ================================================
-
-  #
-  # WARNING: To install Immich, follow our guide: https://docs.immich.app/install/docker-compose
-  #
-  # Make sure to use the docker-compose.yml of the current release:
-  #
+  # https://docs.immich.app/install/docker-compose
   # https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-  #
-  # The compose file on main may not be compatible with the latest release.
 
   immich-server:
     container_name: immich_server
@@ -149,6 +119,34 @@ services:
       disable: false
 
   # ================================================
+  # Nextcloud
+  # ================================================
+
+  nextcloud-aio-mastercontainer:
+    container_name: nextcloud-aio-mastercontainer # This line is not allowed to be changed as otherwise AIO will not work correctly
+    image: ghcr.io/nextcloud-releases/all-in-one:latest # This is the container image used. You can switch to ghcr.io/nextcloud-releases/all-in-one:beta if you want to help testing new releases. See https://github.com/nextcloud/all-in-one#how-to-switch-the-channel
+    init: true # This setting makes sure that signals from main process inside the container are correctly forwarded to children. See https://docs.docker.com/reference/compose-file/services/#init
+    restart: always # This makes sure that the container starts always together with the host OS. See https://docs.docker.com/reference/compose-file/services/#restart
+    volumes:
+      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config # This line is not allowed to be changed as otherwise the built-in backup solution will not work
+      - /var/run/docker.sock:/var/run/docker.sock:ro # May be changed on macOS, Windows or docker rootless. See the applicable documentation. If adjusting, don't forget to also set 'WATCHTOWER_DOCKER_SOCKET_PATH'!
+    devices: ["/dev/dri"] # Uncomment to enable hardware acceleration. ⚠️⚠️⚠️ Warning: this only works if the '/dev/dri' device is present on the host! If it should not exist on your host, don't add this as otherwise the mastercontainer will fail to start! See https://github.com/nextcloud/all-in-one#how-to-enable-hardware-acceleration-for-nextcloud
+    environment:
+      APACHE_PORT: 11001
+      NC_TRUSTED_PROXIES: 100.64.0.0/10
+      FULLTEXTSEARCH_JAVA_OPTIONS: "-Xms1024M -Xmx1024M"
+      NEXTCLOUD_DATADIR: /srv/nextcloud
+      NEXTCLOUD_UPLOAD_LIMIT: 1028G
+      NEXTCLOUD_MAX_TIME: 7200
+      NEXTCLOUD_MEMORY_LIMIT: 1028M
+      SKIP_DOMAIN_VALIDATION: false
+      TALK_PORT: 3478
+    networks: 
+      - homelab-network
+    ports:
+      - 127.0.0.1:8080:8080 # This is the AIO interface, served via https and self-signed certificate. See https://github.com/nextcloud/all-in-one#explanation-of-used-ports
+
+  # ================================================
   # Monitoring
   # ================================================
 
@@ -191,6 +189,43 @@ services:
       TOKEN: ${BESZEL_AGENT_TOKEN}
       HUB_URL: https://beszel.om-homelab.duckdns.org
 
+  # ================================================
+  # Other apps
+  # ================================================
+
+  jellyfin:
+    image: jellyfin/jellyfin:10.11.11@sha256:aefb67e6a7ff1debdd154a78a7bbb780fd0c873d8639210a7f6a2016ad2b35db
+    container_name: jellyfin
+    user: 1000:1000
+    group_add:
+      - 992
+    ports:
+      - 127.0.0.1:8096:8096/tcp
+      - 127.0.0.1:8920:8920/tcp
+      - 127.0.0.1:7359:7359/udp
+    volumes:
+      - /srv/jellyfin/config:/config
+      - /srv/jellyfin/cache:/cache
+      - /mnt/jellyfin-media:/media:ro
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    networks:
+      - homelab-network
+    restart: unless-stopped
+
+  convertx:
+    image: ghcr.io/c4illin/convertx
+    container_name: convertx
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3000:3000
+    environment:
+      - HTTP_ALLOWED=true
+    volumes:
+      - /srv/convertx:/app/data
+    networks:
+      - homelab-network
+
 # ================================================
 
 volumes:
@@ -199,6 +234,8 @@ volumes:
   beszel-data:
   beszel-socket:
   beszel-agent-data:
+  nextcloud_aio_mastercontainer:
+    name: nextcloud_aio_mastercontainer
 
 networks:
   homelab-network:
