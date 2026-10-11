@@ -60,8 +60,6 @@ services:
       DB_PASSWORD: ${IMMICH_DB_PASSWORD}
       DB_USERNAME: ${IMMICH_DB_USERNAME}
       DB_DATABASE_NAME: ${IMMICH_DB_DATABASE_NAME}
-    ports:
-      - 127.0.0.1:2283:2283
     depends_on:
       - redis
       - database
@@ -117,33 +115,18 @@ services:
     healthcheck:
       disable: false
 
-  # ================================================
-  # Nextcloud
-  # https://netbird.io/knowledge-hub/nextcloud-docker-setup
-  # ================================================
-
-  nextcloud-aio-mastercontainer:
-    container_name: nextcloud-aio-mastercontainer # This line is not allowed to be changed as otherwise AIO will not work correctly
-    image: ghcr.io/nextcloud-releases/all-in-one
-    init: true # This setting makes sure that signals from main process inside the container are correctly forwarded to children. See https://docs.docker.com/reference/compose-file/services/#init
-    restart: always
+  homepage:
+    image: ghcr.io/gethomepage/homepage
+    container_name: homepage
     volumes:
-      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config # This line is not allowed to be changed as otherwise the built-in backup solution will not work
-      - /var/run/docker.sock:/var/run/docker.sock:ro # May be changed on macOS, Windows or docker rootless. See the applicable documentation. If adjusting, don't forget to also set 'WATCHTOWER_DOCKER_SOCKET_PATH'!
-    devices:
-      - /dev/dri
+      - /srv/homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
+      - /mnt/jellyfin-media:/mnt/jellyfin-media:ro
     environment:
-      APACHE_PORT: 11001 # Needed when running behind a web server or reverse proxy (like Apache, Nginx, Caddy, Cloudflare Tunnel and else). See https://github.com/nextcloud/all-in-one/blob/main/reverse-proxy.md
-      NC_TRUSTED_PROXIES: 100.64.0.0/10 # Since traffic hits Nextcloud through the NetBird reverse proxy, you need to tell AIO to trust that network so it correctly identifies client IPs instead of seeing everything as coming from the proxy.
-      FULLTEXTSEARCH_JAVA_OPTIONS: "-Xms1024M -Xmx1024M"
-      NEXTCLOUD_DATADIR: /srv/nextcloud # Allows to set the host directory for Nextcloud's datadir. ⚠️⚠️⚠️ Warning: do not set or adjust this value after the initial Nextcloud installation is done! See https://github.com/nextcloud/all-in-one#how-to-change-the-default-location-of-nextclouds-datadir
-      NEXTCLOUD_UPLOAD_LIMIT: 1028G
-      NEXTCLOUD_MAX_TIME: 7200
-      NEXTCLOUD_MEMORY_LIMIT: 1028M
-    networks: 
+      HOMEPAGE_ALLOWED_HOSTS: om-homelab.duckdns.org # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
+      HOMEPAGE_EXTERNAL_URL: https://om-homelab.duckdns.org
+    networks:
       - homelab-network
-    ports:
-      - 127.0.0.1:8080:8080 # This is the AIO interface, served via https and self-signed certificate. See https://github.com/nextcloud/all-in-one#explanation-of-used-ports
 
   # ================================================
   # Monitoring
@@ -153,8 +136,6 @@ services:
     image: henrygd/beszel
     container_name: beszel
     restart: unless-stopped
-    ports:
-      - 127.0.0.1:8090:8090
     networks:
       - homelab-network
     volumes:
@@ -216,8 +197,6 @@ services:
     image: ghcr.io/c4illin/convertx
     container_name: convertx
     restart: unless-stopped
-    ports:
-      - 127.0.0.1:3000:3000
     environment:
       - HTTP_ALLOWED=true
     volumes:
