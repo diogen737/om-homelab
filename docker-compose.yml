@@ -145,7 +145,7 @@ services:
       - APP_URL=https://monitor.om-homelab.duckdns.org
 
   beszel-agent:
-    image: henrygd/beszel-agent:0.18.7-alpine@sha256:c6e925e00784b90eab68e2b813e4c722cf185f378d77e1129a97c064ca5fa7e4
+    image: henrygd/beszel-agent:0.21.0-alpine@sha256:b133b004335261dd10d8e2f1fd989eb4ee6f424ec2f8a8050cce800e014da180
     container_name: beszel-agent
     restart: unless-stopped
     network_mode: host
