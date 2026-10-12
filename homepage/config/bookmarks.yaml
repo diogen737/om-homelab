@@ -1,0 +1,36 @@
+- Homelab:
+    - Repo:
+        - icon: github.svg
+          href: https://github.com/diogen737/om-homelab/pulls
+          description: Configs & compose files
+    - Router:
+        - icon: router.svg
+          href: http://192.168.1.1
+    - DuckDNS:
+        - icon: duckdns.svg
+          href: https://www.duckdns.org
+    - NetBird:
+        - icon: netbird.svg
+          href: https://app.netbird.io
+
+- Docs:
+    - Homepage:
+        - icon: homepage.svg
+          href: https://gethomepage.dev
+    - Immich:
+        - icon: immich.svg
+          href: https://docs.immich.app/overview/quick-start/
+    - Jellyfin:
+        - icon: jellyfin.svg
+          href: https://jellyfin.org/docs/
+
+- Discover:
+    - awesome-selfhosted:
+        - abbr: AS
+          href: https://github.com/awesome-selfhosted/awesome-selfhosted
+    - selfh.st:
+        - abbr: SH
+          href: https://selfh.st
+    - r/selfhosted:
+        - icon: reddit.svg
+          href: https://www.reddit.com/r/selfhosted

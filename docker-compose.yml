@@ -119,12 +119,18 @@ services:
     image: ghcr.io/gethomepage/homepage:v2.4.0@sha256:643bd0be730d40f69d58028a55d1a896739333e8815786df42bc97f109ecbe61
     container_name: homepage
     volumes:
-      - /srv/homepage:/app/config
+      - ./homepage/config:/app/config
+      - ./homepage/images:/app/public/images
       - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
       - /mnt/jellyfin-media:/mnt/jellyfin-media:ro
+      - /mnt/backups:/mnt/backups:ro
     environment:
       HOMEPAGE_ALLOWED_HOSTS: om-homelab.duckdns.org # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
       HOMEPAGE_EXTERNAL_URL: https://om-homelab.duckdns.org
+      HOMEPAGE_VAR_JELLYFIN_KEY: ${HOMEPAGE_VAR_JELLYFIN_KEY}
+      HOMEPAGE_VAR_IMMICH_KEY: ${HOMEPAGE_VAR_IMMICH_KEY}
+      HOMEPAGE_VAR_NPM_USER: ${HOMEPAGE_VAR_NPM_USER}
+      HOMEPAGE_VAR_NPM_PASSWORD: ${HOMEPAGE_VAR_NPM_PASSWORD}
     networks:
       - homelab-network
 

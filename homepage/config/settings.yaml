@@ -1,0 +1,31 @@
+---
+
+title: Homelab
+headerStyle: boxed # underlined, boxed, boxedWidgets, clean
+theme: dark
+color: slate
+cardBlur: md # sm, md, lg
+backgroundOpacity: 0.6
+useEqualHeights: true
+hideVersion: true
+#statusStyle: dot
+target: _blank
+quicklaunch:            # just start typing on the page to jump to a service
+  searchDescriptions: true
+  hideInternetSearch: true
+
+layout:
+  Services:
+    style: row
+    columns: 3
+
+background:
+  image: /images/fd045aaf6f640d83f693bb9c2f4cc445442dbc5b.jpeg
+  blur: sm
+#  saturate: 80
+#  brightness: 45
+#  opacity: 100
+
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/settings/
+
