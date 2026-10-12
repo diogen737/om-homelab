@@ -149,6 +149,11 @@ services:
       - beszel-socket:/beszel_socket
     environment:
       - APP_URL=https://monitor.om-homelab.duckdns.org
+    healthcheck:
+      test: ['CMD', '/beszel', 'health', '--url', 'http://localhost:8090']
+      interval: 120s
+      start_period: 10s
+      timeout: 5s
 
   beszel-agent:
     image: henrygd/beszel-agent:0.21.0-alpine@sha256:b133b004335261dd10d8e2f1fd989eb4ee6f424ec2f8a8050cce800e014da180
@@ -158,6 +163,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - beszel-agent-data:/var/lib/beszel-agent
+      - beszel-socket:/beszel_socket
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
       # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     devices:
@@ -205,6 +211,7 @@ services:
     restart: unless-stopped
     environment:
       - HTTP_ALLOWED=true
+      - PUID=1000
     volumes:
       - /srv/convertx:/app/data
     networks:
@@ -218,8 +225,6 @@ volumes:
   beszel-data:
   beszel-socket:
   beszel-agent-data:
-  nextcloud_aio_mastercontainer:
-    name: nextcloud_aio_mastercontainer
 
 networks:
   homelab-network:
