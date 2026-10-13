@@ -16,7 +16,7 @@ services:
       - /dev/net/tun
     network_mode: host
     environment:
-      - NB_SETUP_KEY=B9138AA3-C170-4D75-82D8-8661FA0C06C2
+      NB_SETUP_KEY: B9138AA3-C170-4D75-82D8-8661FA0C06C2
     volumes:
       - netbird-client:/var/lib/netbird
 
@@ -135,6 +135,53 @@ services:
       - homelab-network
 
   # ================================================
+  # openGym
+  # https://github.com/DuarteSantos8/openGym/blob/main/docker-compose.yml
+  # ================================================
+
+  opengym-api:
+    image: ghcr.io/duartesantos8/opengym-api:1.4.1@sha256:4bc07fe7d1f05a57c0fa25da3563d54dfe27223506637d67fc64088a2a2f140b
+    container_name: opengym-api
+    restart: unless-stopped
+    environment:
+      RP_ID: ${OPENGYM_RP_ID}
+      RP_NAME: ${OPENGYM_RP_NAME}
+      ORIGIN: ${OPENGYM_ORIGIN}
+      PORT: ${OPENGYM_PORT}
+      DATA_DIR: /data
+      TRUST_PROXY: 1
+    volumes:
+      - /srv/open-gym/data:/data # users, passkeys, per-user state, session secret — BACK THIS UP
+                                 # (and uploads/: the photos and videos of custom exercises)
+      # Provider credential cache (Codex). A sibling of ./data on purpose: the documented backup
+      # is `tar czf … data/`, and a live refresh token must not end up inside it. Nothing here
+      # needs backing up — if you lose it, sign the provider in again.
+      - /srv/open-gym/coach-auth:/coach-auth
+    networks:
+      - homelab-network
+
+  # Builds the React frontend (multi-stage) and serves it, proxying /api → api
+  # and the exercise animations, which are part of the image. Single origin for passkeys.
+  opengym-web:
+    image: ghcr.io/duartesantos8/opengym-web:1.4.1@sha256:e32cae9d2f4aad0c5e1b7888c9bfc712b2306ddfe3c65bc4cfefd4b0002e86d3
+    container_name: opengym-web
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      opengym-api:
+        condition: service_started
+    environment:
+      NGINX_PORT: ${OPENGYM_NGINX_PORT}
+      PORT: ${OPENGYM_PORT}
+      BACKEND: opengym-api
+      RESOLVER: 127.0.0.11
+      MEDIA_UPLOAD_MAX: 48m
+    networks:
+      - homelab-network
+
+  # ================================================
   # Monitoring
   # ================================================
 
@@ -148,7 +195,7 @@ services:
       - beszel-data:/beszel_data
       - beszel-socket:/beszel_socket
     environment:
-      - APP_URL=https://monitor.om-homelab.duckdns.org
+      APP_URL: https://monitor.om-homelab.duckdns.org
     healthcheck:
       test: ['CMD', '/beszel', 'health', '--url', 'http://localhost:8090']
       interval: 120s
@@ -210,8 +257,8 @@ services:
     container_name: convertx
     restart: unless-stopped
     environment:
-      - HTTP_ALLOWED=true
-      - PUID=1000
+      HTTP_ALLOWED: true
+      PUID: 1000
     volumes:
       - /srv/convertx:/app/data
     networks:
