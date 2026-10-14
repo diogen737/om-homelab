@@ -57,6 +57,7 @@ backup() {
 			/srv/immich \
 			/srv/nginx-proxy-manager \
 			/srv/samba \
+			/srv/open-gym \
 			--exclude /srv/immich/library/encoded-video \
 			--exclude /srv/immich/library/thumbs \
 			--no-scan \
@@ -76,7 +77,7 @@ backup() {
 	restic forget \
 		--keep-daily 7 \
 		--keep-weekly 4 \
-		--keep-monthly 6 \
+		--keep-monthly 2 \
 		--prune
 }
 
