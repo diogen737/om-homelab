@@ -4,7 +4,7 @@ services:
   # ================================================
 
   netbird-client:
-    image: netbirdio/netbird:0.81.2@sha256:6242a1fbaf6b611c00c26a914cbbea512c30c18a45de0646ce7b0e5d93a21e67
+    image: netbirdio/netbird:0.81.3@sha256:f8a4ea01da9f2351d5c9436209ee9caf35dd118fc9c1fc2ce7859f0c6e44781c
     container_name: netbird-client
     hostname: om-routing-peer
     cap_add:
