@@ -16,7 +16,7 @@ services:
       - /dev/net/tun
     network_mode: host
     environment:
-      NB_SETUP_KEY: B9138AA3-C170-4D75-82D8-8661FA0C06C2
+      NB_SETUP_KEY: ${NB_SETUP_KEY}
     volumes:
       - netbird-client:/var/lib/netbird
 
