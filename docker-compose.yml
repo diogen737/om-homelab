@@ -19,6 +19,13 @@ services:
       NB_SETUP_KEY: ${NB_SETUP_KEY}
     volumes:
       - netbird-client:/var/lib/netbird
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "netbird status --check ready"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   nginx-proxy-manager:
     image: jc21/nginx-proxy-manager:2.16.0@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594
@@ -27,7 +34,6 @@ services:
       TZ: ${TZ}
     ports:
       - 80:80
-      - 81:81
       - 443:443
     volumes:
       - /srv/nginx-proxy-manager/data:/data
@@ -35,6 +41,12 @@ services:
     networks:
       - homelab-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"] # script bundled in the image
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # ================================================
   # Immich
@@ -115,25 +127,6 @@ services:
     healthcheck:
       disable: false
 
-  homepage:
-    image: ghcr.io/gethomepage/homepage:v2.7.0@sha256:19c5c09184458a41b7b5915e71463a39f36cd33540f41bdbed008791b8182d5f
-    container_name: homepage
-    volumes:
-      - ./homepage/config:/app/config
-      - ./homepage/images:/app/public/images
-      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
-      - /mnt/jellyfin-media:/mnt/jellyfin-media:ro
-      - /mnt/backups:/mnt/backups:ro
-    environment:
-      HOMEPAGE_ALLOWED_HOSTS: om-homelab.duckdns.org # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
-      HOMEPAGE_EXTERNAL_URL: https://om-homelab.duckdns.org
-      HOMEPAGE_VAR_JELLYFIN_KEY: ${HOMEPAGE_VAR_JELLYFIN_KEY}
-      HOMEPAGE_VAR_IMMICH_KEY: ${HOMEPAGE_VAR_IMMICH_KEY}
-      HOMEPAGE_VAR_NPM_USER: ${HOMEPAGE_VAR_NPM_USER}
-      HOMEPAGE_VAR_NPM_PASSWORD: ${HOMEPAGE_VAR_NPM_PASSWORD}
-    networks:
-      - homelab-network
-
   # ================================================
   # openGym
   # https://github.com/DuarteSantos8/openGym/blob/main/docker-compose.yml
@@ -158,7 +151,7 @@ services:
       # needs backing up — if you lose it, sign the provider in again.
       - /srv/open-gym/coach-auth:/coach-auth
     networks:
-      - homelab-network
+      - opengym-network
 
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise animations, which are part of the image. Single origin for passkeys.
@@ -177,6 +170,7 @@ services:
       MEDIA_UPLOAD_MAX: 48m
     networks:
       - homelab-network
+      - opengym-network
 
   # ================================================
   # Monitoring
@@ -194,7 +188,7 @@ services:
     environment:
       APP_URL: https://monitor.om-homelab.duckdns.org
     healthcheck:
-      test: ['CMD', '/beszel', 'health', '--url', 'http://localhost:8090']
+      test: ["CMD", "/beszel", "health", "--url", "http://localhost:8090"]
       interval: 120s
       start_period: 10s
       timeout: 5s
@@ -217,13 +211,43 @@ services:
       - SYS_RAWIO # required for S.M.A.R.T. data
       - SYS_ADMIN # required for NVMe S.M.A.R.T. data
     healthcheck:
-      test: ['CMD', '/agent', 'health']
+      test: ["CMD", "/agent", "health"]
       interval: 120s
     environment:
       LISTEN: /beszel_socket/beszel.sock
       KEY: ${BESZEL_AGENT_KEY}
       TOKEN: ${BESZEL_AGENT_TOKEN}
       HUB_URL: https://monitor.om-homelab.duckdns.org
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:v2.7.0@sha256:19c5c09184458a41b7b5915e71463a39f36cd33540f41bdbed008791b8182d5f
+    container_name: homepage
+    volumes:
+      - ./homepage/config:/app/config
+      - ./homepage/images:/app/public/images
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
+      - /mnt/jellyfin-media:/mnt/jellyfin-media:ro
+      - /mnt/backups:/mnt/backups:ro
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: om-homelab.duckdns.org # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
+      HOMEPAGE_EXTERNAL_URL: https://om-homelab.duckdns.org
+      HOMEPAGE_VAR_JELLYFIN_KEY: ${HOMEPAGE_VAR_JELLYFIN_KEY}
+      HOMEPAGE_VAR_IMMICH_KEY: ${HOMEPAGE_VAR_IMMICH_KEY}
+      HOMEPAGE_VAR_NPM_USER: ${HOMEPAGE_VAR_NPM_USER}
+      HOMEPAGE_VAR_NPM_PASSWORD: ${HOMEPAGE_VAR_NPM_PASSWORD}
+    networks:
+      - homelab-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://127.0.0.1:3000/api/healthcheck || exit 1",
+        ]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   # ================================================
   # Other apps
@@ -271,6 +295,9 @@ volumes:
   beszel-agent-data:
 
 networks:
+  opengym-network:
+    name: opengym-network
+    external: true
   homelab-network:
     name: homelab-network
     external: true
