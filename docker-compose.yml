@@ -173,6 +173,83 @@ services:
       - opengym-network
 
   # ================================================
+  # affine
+  # https://github.com/DuarteSantos8/openGym/blob/main/docker-compose.yml
+  # ================================================
+
+  affine:
+    image: ghcr.io/toeverything/affine:stable@sha256:b649f5ce2384ffdf13c23bccf81d759e15973d59d0b0058af65d895a84373099
+    container_name: affine_server
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      affine_migration:
+        condition: service_completed_successfully
+    volumes:
+      - /srv/affine/storage:/root/.affine/storage
+      - ./affine:/root/.affine/config
+    environment:
+      - REDIS_SERVER_HOST=redis
+      - DATABASE_URL=postgresql://affine@postgres:5432/affine
+      - AFFINE_INDEXER_ENABLED=false
+    restart: unless-stopped
+    networks:
+      - affine-network
+      - homelab-network
+
+  affine-migration:
+    image: ghcr.io/toeverything/affine:stable
+    container_name: affine_migration_job
+    volumes:
+      - /srv/affine:/root/.affine/storage
+      - ./affine:/root/.affine/config
+    command: ['sh', '-c', 'node ./scripts/self-host-predeploy.js']
+    environment:
+      - REDIS_SERVER_HOST=redis
+      - DATABASE_URL=postgresql://affine@postgres:5432/affine
+      - AFFINE_INDEXER_ENABLED=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - affine-network
+
+  affine-redis:
+    image: redis@sha256:1f88291b4c57bdf249f02eb085a8669889b2d2954e91d4de5118a5da6b78dd53
+    container_name: affine_redis
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - affine-network
+
+  affine-postgres:
+    image: pgvector/pgvector:pg16@sha256:0dd3149a06e4579a0d70d8fef9945636cd514005e7237deb27f9b67886f8dc4f
+    container_name: affine_postgres
+    volumes:
+      - /srv/affine/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: affine
+      POSTGRES_DB: affine
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'affine', '-d', 'affine']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - affine-network
+
+  # ================================================
   # Monitoring
   # ================================================
 
@@ -300,4 +377,7 @@ networks:
     external: true
   homelab-network:
     name: homelab-network
+    external: true
+  affine-network:
+    name: affine-network
     external: true
