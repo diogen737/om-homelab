@@ -5,10 +5,10 @@
     "externalUrl": "https://notes.om-homelab.duckdns.org"
   },
   "copilot": {
-    "enabled": true,
+    "enabled": false,
     "byok": {
-      "enabled": true,
-      "allowCustomEndpoint": true
+      "enabled": false,
+      "allowCustomEndpoint": false
     }
   }
 }
