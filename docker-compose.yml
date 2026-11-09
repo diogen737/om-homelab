@@ -181,18 +181,18 @@ services:
     image: ghcr.io/toeverything/affine:stable@sha256:b649f5ce2384ffdf13c23bccf81d759e15973d59d0b0058af65d895a84373099
     container_name: affine_server
     depends_on:
-      redis:
+      affine-redis:
         condition: service_healthy
-      postgres:
+      affine-postgres:
         condition: service_healthy
-      affine_migration:
+      affine-migration:
         condition: service_completed_successfully
     volumes:
       - /srv/affine/storage:/root/.affine/storage
       - ./affine:/root/.affine/config
     environment:
-      - REDIS_SERVER_HOST=redis
-      - DATABASE_URL=postgresql://affine@postgres:5432/affine
+      - REDIS_SERVER_HOST=affine-redis
+      - DATABASE_URL=postgresql://affine@affine-postgres:5432/affine
       - AFFINE_INDEXER_ENABLED=false
     restart: unless-stopped
     networks:
@@ -207,13 +207,13 @@ services:
       - ./affine:/root/.affine/config
     command: ['sh', '-c', 'node ./scripts/self-host-predeploy.js']
     environment:
-      - REDIS_SERVER_HOST=redis
-      - DATABASE_URL=postgresql://affine@postgres:5432/affine
+      - REDIS_SERVER_HOST=affine-redis
+      - DATABASE_URL=postgresql://affine@affine-postgres:5432/affine
       - AFFINE_INDEXER_ENABLED=false
     depends_on:
-      postgres:
+      affine-postgres:
         condition: service_healthy
-      redis:
+      affine-redis:
         condition: service_healthy
     networks:
       - affine-network
