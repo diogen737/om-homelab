@@ -58,7 +58,6 @@ backup() {
 			/srv/nginx-proxy-manager \
 			/srv/samba \
 			/srv/open-gym \
-			/srv/affine \
 			--exclude /srv/immich/library/encoded-video \
 			--exclude /srv/immich/library/thumbs \
 			--no-scan \
